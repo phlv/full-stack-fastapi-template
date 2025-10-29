@@ -7,3 +7,4 @@ node_modules/
 .qoder
 backend/.qoder/
 frontend/pnpm-lock.yaml
+backend/sql_app.db

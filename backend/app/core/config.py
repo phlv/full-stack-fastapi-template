@@ -26,7 +26,7 @@ def parse_cors(v: Any) -> list[str] | str:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=f"../.env.{os.getenv('ENVIRONMENT', 'production')}",
+        env_file=f"../.env.{os.getenv('ENVIRONMENT', 'local')}",
         env_ignore_empty=True,
         extra="ignore",
     )
