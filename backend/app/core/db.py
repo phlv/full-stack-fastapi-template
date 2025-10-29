@@ -4,7 +4,13 @@ from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
+engine_args = {}
+if settings.ENVIRONMENT == "local":
+    engine_args = {
+        "connect_args": {"check_same_thread": False},
+    }
+
+engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI), **engine_args)
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB

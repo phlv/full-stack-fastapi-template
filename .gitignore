@@ -4,3 +4,6 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.qoder
+backend/.qoder/
+frontend/pnpm-lock.yaml

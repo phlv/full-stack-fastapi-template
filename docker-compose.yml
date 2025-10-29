@@ -1,23 +1,23 @@
 services:
 
   db:
-    image: postgres:17
+    image: mysql:8.0
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 10s
     volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
+      - app-db-data:/var/lib/mysql
     env_file:
-      - .env
+      - .env.${ENVIRONMENT:-local}
     environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD?Variable not set}
+      - MYSQL_USER=${MYSQL_USER?Variable not set}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD?Variable not set}
+      - MYSQL_DATABASE=${MYSQL_DB?Variable not set}
 
   adminer:
     image: adminer
@@ -46,6 +46,8 @@ services:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     build:
       context: ./backend
+      args:
+        - ENVIRONMENT=${ENVIRONMENT:-prod}
     networks:
       - traefik-public
       - default
@@ -55,8 +57,9 @@ services:
         restart: true
     command: bash scripts/prestart.sh
     env_file:
-      - .env
+      - .env.${ENVIRONMENT:-local}
     environment:
+      - ENVIRONMENT=${ENVIRONMENT}
       - DOMAIN=${DOMAIN}
       - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
       - ENVIRONMENT=${ENVIRONMENT}
@@ -68,11 +71,11 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
-      - POSTGRES_SERVER=db
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - MYSQL_SERVER=db
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DB=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER?Variable not set}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
 
   backend:
@@ -88,8 +91,9 @@ services:
       prestart:
         condition: service_completed_successfully
     env_file:
-      - .env
+      - .env.${ENVIRONMENT:-local}
     environment:
+      - ENVIRONMENT=${ENVIRONMENT}
       - DOMAIN=${DOMAIN}
       - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
       - ENVIRONMENT=${ENVIRONMENT}
@@ -101,11 +105,11 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
-      - POSTGRES_SERVER=db
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - MYSQL_SERVER=db
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DB=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER?Variable not set}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
 
     healthcheck:
@@ -116,6 +120,8 @@ services:
 
     build:
       context: ./backend
+      args:
+        - ENVIRONMENT=${ENVIRONMENT:-prod}
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public

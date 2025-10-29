@@ -2,6 +2,10 @@ FROM python:3.10
 
 ENV PYTHONUNBUFFERED=1
 
+# Default SERVER_ENV to local if not provided
+ARG ENVIRONMENT=prod
+ENV ENVIRONMENT=${ENVIRONMENT}
+
 WORKDIR /app/
 
 # Install uv
@@ -35,6 +39,9 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
 COPY ./tests /app/tests
+
+# Copy environment-specific .env file
+COPY ../.env.${ENVIRONMENT} /app/.env.${ENVIRONMENT}
 
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
